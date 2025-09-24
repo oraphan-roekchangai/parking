@@ -1,31 +1,184 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+  ChartOptions,
+  ChartData,
+} from "chart.js";
+import { Line, Bar } from "react-chartjs-2";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 export default function Dashboard() {
   const [selectedView, setSelectedView] = useState("Day");
-  // Ticks for DAY chart X-axis (hours)
-  const dayXTicks = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23];
 
-  // DAY chart scale and data to align points with X-axis labels
-  const yTop = 30;        // top bound of plot area
-  const yBottom = 150;    // bottom bound of plot area
-  const yMax = 160;       // Y-axis max value (0-160)
+  // Day (Hourly) labels and data
+  const dayLabels = useMemo(() => Array.from({ length: 24 }, (_, h) => `${h}:00`), []);
+  const dayDataValues = useMemo(
+    () => [
+      80, 76, 70, 64, 60, 56, 60, 72,
+      88, 100, 112, 120, 130, 126, 122, 116,
+      110, 100, 96, 92, 88, 86, 84, 82,
+    ],
+    []
+  );
 
-  // 24 hourly values (matching each hour label exactly) - range 0-160
-  const dayData = [
-    80, 76, 70, 64, 60, 56, 60, 72,
-    88, 100, 112, 120, 130, 126, 122, 116,
-    110, 100, 96, 92, 88, 86, 84, 82
+  const lineOptions: ChartOptions<"line"> = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          intersect: false,
+          mode: "index",
+          backgroundColor: "#111827",
+          borderColor: "#1f2937",
+          borderWidth: 1,
+          titleColor: "#fff",
+          bodyColor: "#e5e7eb",
+          padding: 10,
+          callbacks: {
+            label: (ctx) => ` ${ctx.parsed.y}`,
+          },
+        },
+        title: { display: false },
+      },
+      scales: {
+        x: {
+          grid: { color: "#e5e7eb" },
+          ticks: { color: "#9ca3af", maxRotation: 0, autoSkip: true, maxTicksLimit: 12 },
+        },
+        y: {
+          beginAtZero: true,
+          grid: { color: "#f3f4f6" },
+          ticks: { color: "#9ca3af" },
+          suggestedMax: 160,
+        },
+      },
+      elements: {
+        line: { tension: 0.35, borderWidth: 2 },
+        point: { radius: 3, hoverRadius: 5, backgroundColor: "#1d4ed8" },
+      },
+    }),
+    []
+  );
+
+  const lineData: ChartData<"line"> = useMemo(
+    () => ({
+      labels: dayLabels,
+      datasets: [
+        {
+          label: "Vehicles",
+          data: dayDataValues,
+          borderColor: "#123bef",
+          fill: true,
+          backgroundColor: (ctx) => {
+            const { chart } = ctx;
+            const { ctx: c, chartArea } = chart as any;
+            if (!chartArea) return "rgba(18, 59, 239, 0.08)"; // initial
+            const gradient = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+            gradient.addColorStop(0, "rgba(18, 59, 239, 0.25)");
+            gradient.addColorStop(1, "rgba(18, 59, 239, 0.02)");
+            return gradient;
+          },
+        },
+      ],
+    }),
+    [dayLabels, dayDataValues]
+  );
+
+  // Month bar chart
+  const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const monthValues = [200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400];
+  const monthOptions: ChartOptions<"bar"> = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: "#111827", titleColor: "#fff", bodyColor: "#e5e7eb" } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: "#6b7280" } },
+        y: { grid: { color: "#f3f4f6" }, ticks: { color: "#9ca3af" }, beginAtZero: true },
+      },
+    }),
+    []
+  );
+  const monthData: ChartData<"bar"> = useMemo(
+    () => ({
+      labels: monthLabels,
+      datasets: [
+        {
+          label: "Monthly",
+          data: monthValues,
+          borderRadius: 6,
+          backgroundColor: "#0d9488",
+        },
+      ],
+    }),
+    []
+  );
+
+  // Year bar chart
+  const yearLabels = [
+    "2019",
+    "2020",
+    "2021",
+    "2022",
+    "2023",
+    "2024",
+    "2025",
+    "2026",
+    "2027",
+    "2028",
+    "2029",
   ];
-
-  const dayPoints = dayData
-    .map((v, h) => {
-      const x = 30 + h * 37; // same spacing as X-axis labels
-      const y = yBottom - (v / yMax) * (yBottom - yTop);
-      return `${x},${y}`;
-    })
-    .join(" ");
+  const yearValues = [5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000, 50000, 55000];
+  const yearOptions: ChartOptions<"bar"> = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: "#111827", titleColor: "#fff", bodyColor: "#e5e7eb" } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: "#6b7280", maxRotation: 45, minRotation: 0 } },
+        y: { grid: { color: "#f3f4f6" }, ticks: { color: "#9ca3af" }, beginAtZero: true },
+      },
+    }),
+    []
+  );
+  const yearData: ChartData<"bar"> = useMemo(
+    () => ({
+      labels: yearLabels,
+      datasets: [
+        {
+          label: "Yearly",
+          data: yearValues,
+          borderRadius: 6,
+          backgroundColor: "#0d9488",
+        },
+      ],
+    }),
+    []
+  );
 
   return (
     <div className="min-h-screen bg-green-50">
@@ -109,26 +262,26 @@ export default function Dashboard() {
         {/* Left Sidebar - Parking Status Cards */}
         <div className="w-96 p-6 space-y-4">
           {/* 1st Floor VIP */}
-          <div className="bg-gradient-to-br from-green-100 to-green-200 rounded-2xl p-6 relative shadow-sm">
+          <div className="bg-green-300 rounded-2xl p-6 relative shadow-sm">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-2xl font-bold text-gray-800">1st Floor</h3>
-                <p className="text-gray-600 text-lg">(VIP)</p>
-                <p className="text-3xl font-bold mt-2 text-gray-800">10/20</p>
+                <h3 className="text-2xl font-bold text-gray-500">1st Floor</h3>
+                <p className="text-gray-500 text-gray-500">(VIP)</p>
+                <p className="text-3xl font-bold mt-2 text-gray-500">10/20</p>
               </div>
               <div className="relative w-20 h-20">
                 <svg className="w-20 h-20 transform " viewBox="0 0 36 36">
                   <path
                     className="text-gray-200"
                     stroke="currentColor"
-                    strokeWidth="4"
+                    strokeWidth="3"
                     fill="none"
                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   />
                   <path
                     className="text-green-500"
                     stroke="currentColor"
-                    strokeWidth="4"
+                    strokeWidth="3"
                     strokeDasharray="50, 100"
                     strokeLinecap="round"
                     fill="none"
@@ -140,12 +293,12 @@ export default function Dashboard() {
           </div>
 
           {/* 1st Floor Member */}
-          <div className="bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl p-6 relative shadow-sm">
+          <div className="bg-blue-300 rounded-2xl p-6 relative shadow-sm">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-2xl font-bold text-gray-800">1st Floor</h3>
-                <p className="text-gray-600 text-lg">(member)</p>
-                <p className="text-3xl font-bold mt-2 text-gray-800">10/20</p>
+                <h3 className="text-2xl font-bold text-gray-500">1st Floor</h3>
+                <p className="text-gray-500 text-gray-500">(member)</p>
+                <p className="text-3xl font-bold mt-2 text-gray-500">10/20</p>
               </div>
               <div className="relative w-20 h-20">
                 <svg className="w-20 h-20 transform " viewBox="0 0 36 36">
@@ -171,11 +324,11 @@ export default function Dashboard() {
           </div>
 
           {/* 2nd Floor */}
-          <div className="bg-gradient-to-br from-blue-200 via-blue-100 to-blue-300 rounded-2xl p-6 relative shadow-sm">
+          <div className="bg-blue-300 rounded-2xl p-6 relative shadow-sm">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-2xl font-bold text-gray-800">2nd Floor</h3>
-                <p className="text-3xl font-bold mt-4 text-gray-800">20/40</p>
+                <h3 className="text-2xl font-bold text-gray-500">2nd Floor</h3>
+                <p className="text-3xl font-bold mt-4 text-gray-500">20/40</p>
               </div>
               <div className="relative w-20 h-20">
                 <svg className="w-20 h-20 transform " viewBox="0 0 36 36">
@@ -187,7 +340,7 @@ export default function Dashboard() {
                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   />
                   <path
-                    className="text-green-500"
+                    className="text-blue-500"
                     stroke="currentColor"
                     strokeWidth="3"
                     strokeDasharray="50, 100"
@@ -201,11 +354,11 @@ export default function Dashboard() {
           </div>
 
           {/* 3rd Floor */}
-          <div className="bg-gradient-to-br from-blue-300 via-blue-200 to-blue-400 rounded-2xl p-6 relative shadow-sm">
+          <div className="bg-blue-300 rounded-2xl p-6 relative shadow-sm">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-2xl font-bold text-gray-800">3rd Floor</h3>
-                <p className="text-3xl font-bold mt-4 text-gray-800">20/40</p>
+                <h3 className="text-2xl font-bold text-gray-500">3rd Floor</h3>
+                <p className="text-3xl font-bold mt-4 text-gray-500">20/40</p>
               </div>
               <div className="relative w-20 h-20">
                 <svg className="w-20 h-20 transform " viewBox="0 0 36 36">
@@ -217,7 +370,7 @@ export default function Dashboard() {
                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   />
                   <path
-                    className="text-green-500"
+                    className="text-blue-500"
                     stroke="currentColor"
                     strokeWidth="3"
                     strokeDasharray="50, 100"
@@ -231,23 +384,23 @@ export default function Dashboard() {
           </div>
 
           {/* 4th Floor */}
-          <div className="bg-gradient-to-br from-blue-500 via-blue-400 to-blue-600 rounded-2xl p-6 relative shadow-sm">
+          <div className="bg-blue-300 rounded-2xl p-6 relative shadow-sm">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-2xl font-bold text-white">4th Floor</h3>
-                <p className="text-3xl font-bold mt-4 text-white">20/40</p>
+                <h3 className="text-2xl font-bold text-gray-500">4th Floor</h3>
+                <p className="text-3xl font-bold mt-4 text-gray-500">20/40</p>
               </div>
               <div className="relative w-20 h-20">
                 <svg className="w-20 h-20 transform " viewBox="0 0 36 36">
                   <path
-                    className="text-blue-300"
+                    className="text-gray-200"
                     stroke="currentColor"
                     strokeWidth="3"
                     fill="none"
                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   />
                   <path
-                    className="text-green-400"
+                    className="text-blue-500"
                     stroke="currentColor"
                     strokeWidth="3"
                     strokeDasharray="50, 100"
@@ -262,123 +415,42 @@ export default function Dashboard() {
         </div>
 
   {/* Right Content Area - Charts */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-5">
           {/* Charts - Vertical Stack */}
           <div className="space-y-4">
-            {/* Daily Chart (Line Chart) */}
+            {/* Daily Chart (Line Chart with Chart.js) */}
             <div className="relative bg-white rounded-xl p-6 shadow-sm">
-              {/* Corner pill label */}
-              <div className="absolute top-2 right-2 rounded-full bg-gray-200 text-gray-700 text-sm font-semibold px-4 py-1 shadow-sm">
-                Day
+              <div className="flex justify-between items-center mb-4">
               </div>
-              <div className="h-64 relative">
-                <svg className="w-full h-full" viewBox="0 0 900 200" >
-                 
-                  
-                  {/* Y-axis labels */}
-                  {[0, 20, 40, 60, 80, 100, 120, 140, 160, 180].map((v) => {
-                    const y = yBottom - (v / yMax) * ((yBottom - yTop)+25);
-                    return (
-                      <text key={v} x="25" y={y + 5} textAnchor="end" className="text-xs fill-gray-400">
-                        {v}
-                      </text>
-                    );
-                  })}
-                  
-                  {/* Line chart */}
-                  <polyline
-                    fill="none"
-                    stroke="#123befff"
-                    strokeWidth="2"
-                    points={dayPoints}
-                  />
-                  
-                  {/* Data points - aligned with X-axis labels */}
-                  {dayData.map((v, h) => {
-                    const x = 30 + h * 37; // same spacing as X-axis labels
-                    const y = yBottom - (v / yMax) * (yBottom - yTop);
-                    return <circle key={h} cx={x} cy={y} r="3" fill="#123befff" />;
-                  })}
-                  
-                  {/* X-axis labels (centered, non-overlapping) */}
-                  {dayXTicks.map((h) => {
-
-                    
-                    const x = 30 + h * 37; // plot distance between point x-lable
-                    const label = h === 23 ? "23:00" : `${h}:00`;
-                    return (
-                      <text key={h} x={x} y="170" textAnchor="middle" className="text-[12px] fill-gray-400" >
-                        {label}
-                      </text>
-                    );
-                  })}
-                </svg>
+              <div className="absolute top-2 right-2 rounded-full bg-gray-200 text-gray-700 text-sm font-semibold px-4 py-1 shadow-sm">
+                DAY
+              </div>
+              <div className="h-56">
+                <Line data={lineData} options={lineOptions} />
               </div>
             </div>
 
-            {/* Monthly Bar Chart */}
-            <div className="relative bg-white rounded-xl p-4 shadow-sm">
-              {/* Corner pill label */}
+            {/* Monthly Bar Chart (Chart.js) */}
+            <div className="relative bg-white rounded-xl p-6 shadow-sm">
+              <div className="flex justify-between items-center mb-4">
+              </div>
               <div className="absolute top-2 right-2 rounded-full bg-gray-200 text-gray-700 text-sm font-semibold px-4 py-1 shadow-sm">
                 MONTH
               </div>
-              <div className="h-48 flex items-end justify-between space-x-1">
-                {[
-                  { height: 60, label: "Jan" },
-                  { height: 80, label: "Feb" },
-                  { height: 70, label: "Mar" },
-                  { height: 90, label: "Apr" },
-                  { height: 100, label: "May" },
-                  { height: 85, label: "Jun" },
-                  { height: 95, label: "Jul" },
-                  { height: 75, label: "Aug" },
-                  { height: 65, label: "Sep" },
-                  { height: 55, label: "Oct" },
-                  { height: 45, label: "Nov" },
-                  { height: 50, label: "Dec" }
-                ].map((bar, idx) => (
-                  <div key={idx} className="flex flex-col items-center flex-1">
-                    <div 
-                      className="w-full bg-teal-600 rounded-t-sm" 
-                      style={{ height: `${bar.height}px` }}
-                    ></div>
-                    <span className="text-xs text-gray-500 mt-1 transform origin-bottom-left">{bar.label}</span>
-                  </div>
-                ))}
+              <div className="h-56">
+                <Bar data={monthData} options={monthOptions} />
               </div>
             </div>
 
-            {/* Yearly Bar Chart */}
+            {/* Yearly Bar Chart (Chart.js) */}
             <div className="relative bg-white rounded-xl p-6 shadow-sm">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-800">YEAR</h3>
               </div>
-              {/* Corner pill label */}
               <div className="absolute top-2 right-2 rounded-full bg-gray-200 text-gray-700 text-sm font-semibold px-4 py-1 shadow-sm">
                 YEAR
               </div>
-              <div className="h-48 flex items-end justify-between space-x-1">
-                {[
-                  { height: 40, label: "2019" },
-                  { height: 50, label: "2020" },
-                  { height: 45, label: "2021" },
-                  { height: 70, label: "2022" },
-                  { height: 35, label: "2023" },
-                  { height: 40, label: "2024" },
-                  { height: 55, label: "2025" },
-                  { height: 65, label: "2026" },
-                  { height: 60, label: "2027" },
-                  { height: 30, label: "2028" },
-                  { height: 80, label: "2029" }
-                ].map((bar, idx) => (
-                  <div key={idx} className="flex flex-col items-center flex-1">
-                    <div 
-                      className="w-full bg-teal-600 rounded-t-sm" 
-                      style={{ height: `${bar.height}px` }}
-                    ></div>
-                    <span className="text-xs text-gray-500 mt-1 transform rotate-45 origin-bottom-left">{bar.label}</span>
-                  </div>
-                ))}
+              <div className="h-56">
+                <Bar data={yearData} options={yearOptions} />
               </div>
             </div>
           </div>
