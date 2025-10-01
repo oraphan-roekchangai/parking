@@ -31,6 +31,7 @@ ChartJS.register(
 
 export default function Dashboard() {
   const [selectedView, setSelectedView] = useState("Day");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Day (Hourly) labels and data
   const dayLabels = useMemo(() => Array.from({ length: 24 }, (_, h) => `${h}:00`), []);
@@ -182,14 +183,82 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-green-50">
-      {/* Left edge arrow button */}
-      <button
-        aria-label="Open sidebar"
-        className="fixed left-1 top-1/2 -translate-y-1/2 z-50 bg-white border border-gray-300 rounded-r-full shadow px-2 py-3 text-gray-600 hover:bg-gray-50"
-        type="button"
-      >
-        &gt;
-      </button>
+      {/* Sidebar Menu */}
+      <div className={`fixed left-0 top-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 z-40 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-xl font-bold text-gray-800">Car Parking</h2>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          </div>
+          <nav className="space-y-4">
+            <a href="/dashboard" className="flex items-center space-x-3 text-white bg-green-600 p-3 rounded-lg">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span>Dashboard</span>
+            </a>
+            <a href="/user-management" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 hover:bg-gray-100 p-3 rounded-lg">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              <span>User Management</span>
+            </a>
+            <a href="#" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 hover:bg-gray-100 p-3 rounded-lg">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <span>Gate controlling</span>
+            </a>
+            <a href="#" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 hover:bg-gray-100 p-3 rounded-lg">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span>License plates</span>
+            </a>
+          </nav>
+          <div className="absolute bottom-6 left-6 right-6">
+            <a href="#" className="flex items-center space-x-3 text-gray-600 hover:text-gray-800 hover:bg-gray-100 p-3 rounded-lg">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span>Log out</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Left edge arrow button - only show when sidebar is closed */}
+      {!sidebarOpen && (
+        <button
+          aria-label="Open sidebar"
+          className="fixed left-0 top-1/2 -translate-y-1/2 z-50 bg-white border border-gray-300 shadow-lg hover:bg-gray-50 transition-all duration-300 flex items-center justify-center rounded-r-lg px-1 py-6"
+          type="button"
+          onClick={() => setSidebarOpen(true)}
+        >
+          <svg
+            className="w-5 h-5 text-gray-500" 
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={3} 
+              d="M9 5l7 7-7 7" 
+            />
+          </svg>
+        </button>
+      )}
       {/* Header */}
       <header className="bg-white shadow-sm px-6 py-3 border-b">
         <div className="flex items-center justify-between">
@@ -262,24 +331,23 @@ export default function Dashboard() {
         {/* Left Sidebar - Parking Status Cards */}
         <div className="w-96 p-6 space-y-4">
           {/* 1st Floor VIP */}
-          <div className="bg-green-300 rounded-2xl p-6 relative shadow-sm">
+          <div className="bg-green-800 rounded-2xl p-6 relative shadow-sm">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-2xl font-bold text-gray-500">1st Floor</h3>
-                <p className="text-gray-500 text-gray-500">(VIP)</p>
-                <p className="text-3xl font-bold mt-2 text-gray-500">10/20</p>
+                <h3 className="text-2xl font-bold text-gray-100">1st Floor (VIP)</h3>
+                <p className="text-3xl font-bold mt-2 text-gray-100">10/20</p>
               </div>
               <div className="relative w-20 h-20">
                 <svg className="w-20 h-20 transform " viewBox="0 0 36 36">
                   <path
-                    className="text-gray-200"
+                    className="text-gray-300"
                     stroke="currentColor"
                     strokeWidth="3"
                     fill="none"
                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   />
                   <path
-                    className="text-green-500"
+                    className="text-yellow-500"
                     stroke="currentColor"
                     strokeWidth="3"
                     strokeDasharray="50, 100"
@@ -296,9 +364,8 @@ export default function Dashboard() {
           <div className="bg-blue-300 rounded-2xl p-6 relative shadow-sm">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-2xl font-bold text-gray-500">1st Floor</h3>
-                <p className="text-gray-500 text-gray-500">(member)</p>
-                <p className="text-3xl font-bold mt-2 text-gray-500">10/20</p>
+                <h3 className="text-2xl font-bold text-gray-900">1st Floor</h3>
+                <p className="text-3xl font-bold mt-2 text-gray-900">10/20</p>
               </div>
               <div className="relative w-20 h-20">
                 <svg className="w-20 h-20 transform " viewBox="0 0 36 36">
@@ -327,8 +394,8 @@ export default function Dashboard() {
           <div className="bg-blue-300 rounded-2xl p-6 relative shadow-sm">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-2xl font-bold text-gray-500">2nd Floor</h3>
-                <p className="text-3xl font-bold mt-4 text-gray-500">20/40</p>
+                <h3 className="text-2xl font-bold text-gray-900">2nd Floor</h3>
+                <p className="text-3xl font-bold mt-4 text-gray-900">20/40</p>
               </div>
               <div className="relative w-20 h-20">
                 <svg className="w-20 h-20 transform " viewBox="0 0 36 36">
@@ -357,8 +424,8 @@ export default function Dashboard() {
           <div className="bg-blue-300 rounded-2xl p-6 relative shadow-sm">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-2xl font-bold text-gray-500">3rd Floor</h3>
-                <p className="text-3xl font-bold mt-4 text-gray-500">20/40</p>
+                <h3 className="text-2xl font-bold text-gray-900">3rd Floor</h3>
+                <p className="text-3xl font-bold mt-4 text-gray-900">20/40</p>
               </div>
               <div className="relative w-20 h-20">
                 <svg className="w-20 h-20 transform " viewBox="0 0 36 36">
@@ -387,8 +454,8 @@ export default function Dashboard() {
           <div className="bg-blue-300 rounded-2xl p-6 relative shadow-sm">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-2xl font-bold text-gray-500">4th Floor</h3>
-                <p className="text-3xl font-bold mt-4 text-gray-500">20/40</p>
+                <h3 className="text-2xl font-bold text-gray-900">4th Floor</h3>
+                <p className="text-3xl font-bold mt-4 text-gray-900">20/40</p>
               </div>
               <div className="relative w-20 h-20">
                 <svg className="w-20 h-20 transform " viewBox="0 0 36 36">
